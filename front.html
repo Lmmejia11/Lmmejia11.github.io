@@ -33,8 +33,8 @@
             <td><div v-if="room.noise.status == 'ON'"><img src="img/ringer-on.png"></div>
                 <div v-else-if="room.noise.status == 'OFF'"><img src="img/ringer-off.png"></div></td>
             <td>{{room.noise.level}}</td>
-            <td><button v-on:click="switchLight(room)"><img src="img/switch.png"></button></td>
-            <td><button v-on:click="switchNoise(room)"><img src="img/switch.png"></button></td>
+            <td><button v-on:click="switchLightAndPublish(room)"><img src="img/switch.png"></button></td>
+            <td><button v-on:click="switchNoiseAndPublish(room)"><img src="img/switch.png"></button></td>
         </tr>
         </tbody>
     </table>
@@ -43,33 +43,81 @@
 
 <script src="https://unpkg.com/vue"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script>
-
-    var apiRooms = 'https://glacial-plateau-99461.herokuapp.com/api/rooms';
-
-    var app = new Vue({
-        el: '#app',
-        data: {
-            rooms: []
-        },
-        mounted(){
-            axios.get(apiRooms).then(response => {this.rooms = response.data});
-        },
-        methods: {
-            switchLight: function (room) {
-                axios.post(apiRooms + "/"+room.id+"/switch-light").then( result => { this.rooms = result.data });
-            },
-            switchNoise: function (room) {
-                axios.post(apiRooms + "/"+room.id+"/switch-ringer").then( result => { this.rooms = result.data });
-            }
-        }
-
-    })
-
-
-</script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
         integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
         crossorigin="anonymous"></script>
+<script src="./js/mqtt.min.js.download"></script>
+<script>
+
+
+//----------------------------- DataBase API, using axios -----------------------------------//
+
+// Stablish API url
+var apiRooms = 'http://localhost:8080/api/rooms'; // 'https://glacial-plateau-99461.herokuapp.com/api/rooms';
+// Define API methods
+function APIswitchLight(roomId) {
+	return axios.post(apiRooms + "/"+roomId+"/switch-light");
+}
+function APIswitchNoise(roomId) {
+	return axios.post(apiRooms + "/"+roomId+"/switch-ringer");
+}
+function APIgetRooms(){
+	return axios.get(apiRooms);
+}
+
+//----------------------------- Publishing with mqtt -----------------------------------//
+
+// Create mqtt client 
+var client = mqtt.connect("wss://ndtzubom:yGCB-nJ4kcOC@m23.cloudmqtt.com:34984")
+client.subscribe("rp/#")
+client.subscribe("a/#")
+// Define publishing methods
+function publishSwitch(lightOrNoise, roomId, currentStatus){
+	switchOn = currentStatus == 'OFF' ? 'true' : 'false';
+	client.publish( "web/"+lightOrNoise+"/"+roomId, '{"on":'+switchOn+'}');
+	console.log("Published: "+lightOrNoise+" in room id " + roomId + " needs to be switched" );
+}
+// Define callback method
+client.on("message", function (topic, payload) {
+	console.log("Message received by client: " , topic , new TextDecoder("utf-8").decode(payload));
+	var info = topic.split("/");
+	if (info[1] == "light"){
+		app.switchLight(info[2]);
+	}
+	else if (info[1] == "noise"){
+		app.switchNoise(info[2]);
+	}
+})
+
+//----------------------------- VUE to control table -----------------------------------//
+var app = new Vue({
+	el: '#app',
+	data: {
+		rooms: []
+	},
+	mounted(){
+		APIgetRooms().then(result => {this.rooms = result.data});
+	},
+	methods: {
+		switchLight: function (roomId) {
+			APIswitchLight(roomId).then( result => { this.rooms = result.data });
+		},
+		switchLightAndPublish: function (room) {
+			this.switchLight(room.id);
+			publishSwitch("light", room.id, room.light.status)
+		},
+		switchNoise: function (roomId) {
+			APIswitchNoise(roomId).then( result => { this.rooms = result.data });
+		},
+		switchNoiseAndPublish: function (room) {
+			this.switchNoise(room.id);
+			publishSwitch("noise", room.id, room.light.status)
+		}
+	}
+
+})
+  
+</script>
+
 </body>
 </html>
