@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Web page</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+          integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+</head>
+<body>
+
+<div class="container" id="app">
+    <h1 class="text-center">List of Buildings</h1>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col"># Building</th>
+			<th scope="col">Name</th>
+            <th scope="col">N° of Rooms</th>
+            <th scope="col">Details</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="building in buildings">
+            <td scope="row">{{building.id}}</td>
+            <td>{{building.name}}</td>
+			<td>{{building.n_rooms}}</td>
+            <td><a v-bind:href="'front.html?bd=' + building.id"><img src="img/detail.png"></a></td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script src="https://unpkg.com/vue"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+
+//----------------------------- DataBase API, using axios -----------------------------------//
+
+// Stablish API url
+var apiBuilding = 'http://localhost:8080/api/buildings'; // 'https://glacial-plateau-99461.herokuapp.com/api/buildings';
+// Define API methods
+function APIgetBuildings(){
+	return axios.get(apiBuilding);
+}
+	
+//----------------------------- VUE to control table -----------------------------------//
+var app = new Vue({
+        el: '#app',
+        data: {
+            buildings: []
+        },
+        mounted(){
+            APIgetBuildings().then(response => {this.buildings = response.data});
+        }
+    })
+</script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+        integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+</body>
+</html>

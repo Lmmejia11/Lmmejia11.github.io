@@ -48,21 +48,26 @@
         crossorigin="anonymous"></script>
 <script src="./js/mqtt.min.js.download"></script>
 <script>
+		
 
 
 //----------------------------- DataBase API, using axios -----------------------------------//
 
 // Stablish API url
 var apiRooms = 'http://localhost:8080/api/rooms'; // 'https://glacial-plateau-99461.herokuapp.com/api/rooms';
+var apiBuildings = 'http://localhost:8080/api/buildings'; // 'https://glacial-plateau-99461.herokuapp.com/api/buildings';
 // Define API methods
 function APIswitchLight(roomId) {
-	return axios.post(apiRooms + "/"+roomId+"/switch-light");
+	return axios.post(apiRooms + "/"+roomId+"/switch-light/all");
 }
 function APIswitchNoise(roomId) {
-	return axios.post(apiRooms + "/"+roomId+"/switch-ringer");
+	return axios.post(apiRooms + "/"+roomId+"/switch-ringer/all");
 }
-function APIgetRooms(){
+function APIgetAllRooms(){
 	return axios.get(apiRooms);
+}
+function APIgetRooms(buildingId){
+	return axios.get(apiBuildings + "/" + buildingId);
 }
 
 //----------------------------- Publishing with mqtt -----------------------------------//
@@ -96,7 +101,13 @@ var app = new Vue({
 		rooms: []
 	},
 	mounted(){
-		APIgetRooms().then(result => {this.rooms = result.data});
+		var url = new URL(window.location.href);
+		var bd = url.searchParams.get("bd");
+		if (bd == null){
+			APIgetAllRooms().then(result => {this.rooms = result.data});
+		}else{
+			APIgetRooms(bd).then(result => {this.rooms = result.data.rooms});
+		}
 	},
 	methods: {
 		switchLight: function (roomId) {
