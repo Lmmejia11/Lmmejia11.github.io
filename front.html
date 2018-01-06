@@ -4,21 +4,32 @@
     <meta charset="UTF-8">
     <title>Web page</title>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css
           integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
 </head>
 <body>
 
-<div class="container" id="app">
-    <h1 class="text-center">List of Rooms</h1>
+<h1 class="text-center">List of Rooms</h1>
 
+<div class="container" id="app">
+
+	<ol>Filter by building N° :
+        <select v-model="buildingSelected">
+			<option>all</option>
+            <option v-for="buildingId in buildingIds" v-bind:id="buildingId">
+                {{ buildingId }}
+            </option>
+        </select>
+		<button v-on:click="getSomeRooms(buildingSelected)">Filter</button>
+    </ol>
+	
     <table class="table">
         <thead>
         <tr>
             <th scope="col">#</th>
             <th scope="col">Light Status</th>
+			<th scope="col">Ringer Status</th>
             <th scope="col">Light Level</th>
-            <th scope="col">Ringer status</th>
             <th scope="col">Noise Level</th>
             <th scope="col">Switch Light</th>
             <th scope="col">Switch Ringer</th>
@@ -29,19 +40,19 @@
             <td scope="row">{{room.id}}</td>
             <td><div v-if="room.light.status == 'ON'"><img src="img/light-on.png"></div>
                 <div v-else-if="room.light.status == 'OFF'"><img src="img/light-off.png"></div></td>
-            <td>{{room.light.level}}</td>
             <td><div v-if="room.noise.status == 'ON'"><img src="img/ringer-on.png"></div>
                 <div v-else-if="room.noise.status == 'OFF'"><img src="img/ringer-off.png"></div></td>
+			<td>{{room.light.level}}</td>
             <td>{{room.noise.level}}</td>
             <td><button v-on:click="switchLightAndPublish(room)"><img src="img/switch.png"></button></td>
             <td><button v-on:click="switchNoiseAndPublish(room)"><img src="img/switch.png"></button></td>
         </tr>
         </tbody>
     </table>
-
 </div>
 
-<script src="https://unpkg.com/vue"></script>
+<script src="./js/vue.js"></script>
+<!--script src="https://unpkg.com/vue"></script-->
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
         integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
@@ -54,14 +65,14 @@
 //----------------------------- DataBase API, using axios -----------------------------------//
 
 // Stablish API url
-var apiRooms = 'http://localhost:8080/api/rooms'; // 'https://glacial-plateau-99461.herokuapp.com/api/rooms';
-var apiBuildings = 'http://localhost:8080/api/buildings'; // 'https://glacial-plateau-99461.herokuapp.com/api/buildings';
+var apiRooms =  'https://glacial-plateau-99461.herokuapp.com/api/rooms'; // 'http://localhost:8080/api/rooms'; // 
+var apiBuildings =  'https://glacial-plateau-99461.herokuapp.com/api/buildings'; // 'http://localhost:8080/api/buildings'; //
 // Define API methods
 function APIswitchLight(roomId) {
 	return axios.post(apiRooms + "/"+roomId+"/switch-light/all");
 }
 function APIswitchNoise(roomId) {
-	return axios.post(apiRooms + "/"+roomId+"/switch-ringer/all");
+	return axios.post(apiRooms + "/"+roomId+"/switch-ringer/all"); 
 }
 function APIgetAllRooms(){
 	return axios.get(apiRooms);
@@ -69,28 +80,34 @@ function APIgetAllRooms(){
 function APIgetRooms(buildingId){
 	return axios.get(apiBuildings + "/" + buildingId);
 }
+function APIgetBuildingIds(){
+	return axios.get(apiBuildings + "/ids"); 
+}
 
-//----------------------------- Publishing with mqtt -----------------------------------//
+//----------------------------- mqtt client for state -----------------------------------//
 
-// Create mqtt client 
-var client = mqtt.connect("wss://ndtzubom:yGCB-nJ4kcOC@m23.cloudmqtt.com:34984")
-client.subscribe("rp/#")
-client.subscribe("a/#")
+// Topic = {origin}/state/{light|noise}/{id}
+// Message = ON|OFF
+
+// Create mqtt clientS 
+var clientS = mqtt.connect("wss://ndtzubom:yGCB-nJ4kcOC@m23.cloudmqtt.com:34984")
+clientS.subscribe("rp/state/#")
+clientS.subscribe("a/state/#")
 // Define publishing methods
 function publishSwitch(lightOrNoise, roomId, currentStatus){
-	switchOn = currentStatus == 'OFF' ? 'true' : 'false';
-	client.publish( "web/"+lightOrNoise+"/"+roomId, '{"on":'+switchOn+'}');
+	switchOn = currentStatus == 'OFF' ? 'ON' : 'OFF';
+	clientS.publish( "web/state/"+lightOrNoise+"/"+roomId, switchOn);
 	console.log("Published: "+lightOrNoise+" in room id " + roomId + " needs to be switched" );
 }
-// Define callback method
-client.on("message", function (topic, payload) {
-	console.log("Message received by client: " , topic , new TextDecoder("utf-8").decode(payload));
+// Define callback method: 
+clientS.on("message", function (topic, payload) {
+	console.log("Message received by clientS: " , topic , new TextDecoder("utf-8").decode(payload));
 	var info = topic.split("/");
-	if (info[1] == "light"){
-		app.switchLight(info[2]);
+	if (info[2] == "light"){
+		app.switchLight(info[3]);
 	}
-	else if (info[1] == "noise"){
-		app.switchNoise(info[2]);
+	else if (info[2] == "noise"){
+		app.switchNoise(info[3]);
 	}
 })
 
@@ -98,6 +115,8 @@ client.on("message", function (topic, payload) {
 var app = new Vue({
 	el: '#app',
 	data: {
+		buildingIds: [],
+		buildingSelected: '',
 		rooms: []
 	},
 	mounted(){
@@ -106,27 +125,41 @@ var app = new Vue({
 		if (bd == null){
 			APIgetAllRooms().then(result => {this.rooms = result.data});
 		}else{
-			APIgetRooms(bd).then(result => {this.rooms = result.data.rooms});
+			APIgetRooms(buildingId).then(result => {this.rooms = result.data.rooms});
+			buildingSelected = bd;
 		}
+		APIgetBuildingIds().then(result => {this.buildingIds = result.data});
 	},
 	methods: {
 		switchLight: function (roomId) {
 			APIswitchLight(roomId).then( result => { this.rooms = result.data });
 		},
 		switchLightAndPublish: function (room) {
-			this.switchLight(room.id);
-			publishSwitch("light", room.id, room.light.status)
+			this.switchLight(room.id); 
+			publishSwitch("light", room.id, room.light.status);
 		},
 		switchNoise: function (roomId) {
 			APIswitchNoise(roomId).then( result => { this.rooms = result.data });
 		},
 		switchNoiseAndPublish: function (room) {
 			this.switchNoise(room.id);
-			publishSwitch("noise", room.id, room.light.status)
+			publishSwitch("noise", room.id, room.light.status);
+		},
+		getAllRooms: function(){
+			APIgetAllRooms().then(result => {this.rooms = result.data});
+		},
+		getSomeRooms: function(buildingId){
+			if (buildingId == "all") {app.getAllRooms();}
+			else {APIgetRooms(buildingId).then(result => {this.rooms = result.data.rooms});}
 		}
 	}
 
 })
+
+window.setInterval(function(){
+	if (app.buildingSelected == ''){ app.getAllRooms();}
+	else {app.getSomeRooms(app.buildingSelected);}
+}, 5000);
   
 </script>
 
