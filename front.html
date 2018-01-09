@@ -86,30 +86,17 @@ function APIgetBuildingIds(){
 
 //----------------------------- mqtt client for state -----------------------------------//
 
-// Topic = {origin}/state/{light|noise}/{id}
+// Topic = {for}/state/{light|noise}/{id}
 // Message = ON|OFF
 
 // Create mqtt clientS 
 var clientS = mqtt.connect("wss://ndtzubom:yGCB-nJ4kcOC@m23.cloudmqtt.com:34984")
-clientS.subscribe("rp/state/#")
-clientS.subscribe("a/state/#")
 // Define publishing methods
 function publishSwitch(lightOrNoise, roomId, currentStatus){
 	switchOn = currentStatus == 'OFF' ? 'ON' : 'OFF';
-	clientS.publish( "web/state/"+lightOrNoise+"/"+roomId, switchOn);
+	clientS.publish( "rl/state/"+lightOrNoise+"/"+roomId, switchOn);
 	console.log("Published: "+lightOrNoise+" in room id " + roomId + " needs to be switched" );
 }
-// Define callback method: 
-clientS.on("message", function (topic, payload) {
-	console.log("Message received by clientS: " , topic , new TextDecoder("utf-8").decode(payload));
-	var info = topic.split("/");
-	if (info[2] == "light"){
-		app.switchLight(info[3]);
-	}
-	else if (info[2] == "noise"){
-		app.switchNoise(info[3]);
-	}
-})
 
 //----------------------------- VUE to control table -----------------------------------//
 var app = new Vue({
@@ -131,19 +118,13 @@ var app = new Vue({
 		APIgetBuildingIds().then(result => {this.buildingIds = result.data});
 	},
 	methods: {
-		switchLight: function (roomId) {
-			APIswitchLight(roomId).then( result => { this.rooms = result.data });
-		},
 		switchLightAndPublish: function (room) {
-			this.switchLight(room.id); 
 			publishSwitch("light", room.id, room.light.status);
-		},
-		switchNoise: function (roomId) {
-			APIswitchNoise(roomId).then( result => { this.rooms = result.data });
+			APIswitchLight(room.id).then( result => { this.rooms = result.data });
 		},
 		switchNoiseAndPublish: function (room) {
-			this.switchNoise(room.id);
 			publishSwitch("noise", room.id, room.light.status);
+			APIswitchNoise(room.id).then( result => { this.rooms = result.data });
 		},
 		getAllRooms: function(){
 			APIgetAllRooms().then(result => {this.rooms = result.data});
