@@ -45,14 +45,33 @@
 
     </ol>
 </div>
-
+<script src="./js/vue.js"></script>
 <script src="https://unpkg.com/vue"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
         integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
         crossorigin="anonymous"></script>
-
+<script src="./js/mqtt.min.js.download"></script>
 <script>
+
+
+    //-----Mqtt client for transmitting switches---------------------
+
+
+    // Create mqtt clientS
+    var clientS = mqtt.connect("wss://ndtzubom:yGCB-nJ4kcOC@m23.cloudmqtt.com:34984");
+    // Define publishing methods
+    function publishSwitch( roomId, currentStatus){
+        switchOn = currentStatus == 'OFF' ? 'ON' : 'OFF';
+        clientS.publish( "rl/state/noise/"+roomId, switchOn);
+        console.log("Published: light in room id " + roomId + " needs to be switched" );
+    };
+
+    function publishSwtichAll() {};
+
+
+
+    //------ Vue.js code to manage switches---------------------------
     //var apiRooms = 'https://glacial-plateau-99461.herokuapp.com/api/rooms';
     var apiRooms = 'http://localhost:8080/api/rooms';
 
@@ -81,7 +100,7 @@
             },
             switchAllRingers: function (mode) {
                 axios.post(apiRooms + "/switch-all-ringers/" + mode).then(x => {
-                    axios.get(apiRooms + "/Ringers/on").then(response => {this.roomsRingertOn = response.data});
+                    axios.get(apiRooms + "/Ringers/on").then(response => {this.roomsRingerOn = response.data});
                 axios.get(apiRooms + "/Ringers/off").then(response => {this.roomsRingerOff = response.data})
                 });
             }

@@ -46,13 +46,39 @@
     </ol>
 </div>
 
+<script src="./js/vue.js"></script>
 <script src="https://unpkg.com/vue"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
         integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
         crossorigin="anonymous"></script>
+<script src="./js/mqtt.min.js.download"></script>
 
 <script>
+
+
+//-----Mqtt client for transmitting switches---------------------
+
+
+// Create mqtt clientS
+var clientS = mqtt.connect("wss://ndtzubom:yGCB-nJ4kcOC@m23.cloudmqtt.com:34984");
+// Define publishing methods
+function publishSwitch( roomId, currentStatus){
+    switchOn = currentStatus == 'OFF' ? 'ON' : 'OFF';
+    clientS.publish( "rl/state/light/"+roomId, switchOn);
+    console.log("Published: light in room id " + roomId + " needs to be switched" );
+};
+
+function publishSwitchAll(listlightson, listlightsoff, mode) {
+    if (mode == "OFF") return listlightson.filter( function(currentroom){
+        clientS.publish("rl/state/light/"+currentroom.id, mode)})
+    if (mode == "ON") return listlightsoff.filter( function(currentroom){
+        clientS.publish("rl/state/light/"+currentroom.id, mode)})
+};
+
+
+
+//------ Vue.js code to manage switches---------------------------
     //var apiRooms = 'https://glacial-plateau-99461.herokuapp.com/api/rooms';
     var apiRooms = 'http://localhost:8080/api/rooms';
 
@@ -74,6 +100,7 @@
         },
         methods: {
             switchLight: function (selected) {
+                publishSwitch(selected, app.modality);
                 axios.post(apiRooms + "/"+selected+"/switch-light").then( x => {
                 axios.get(apiRooms + "/Lights/on").then(response => {this.roomsLightOn = response.data});
                 axios.get(apiRooms + "/Lights/off").then(response => {this.roomsLightOff = response.data})
@@ -81,6 +108,7 @@
 
             },
             switchAllLights: function (mode) {
+                publishSwitchAll(app.roomsLightOn, app.roomsLightOff, mode);
                 axios.post(apiRooms +"/switch-all-lights/"+mode).then( x=> {
                 axios.get(apiRooms + "/Lights/on").then(response => {this.roomsLightOn = response.data});
                 axios.get(apiRooms + "/Lights/off").then(response => {this.roomsLightOff = response.data})
