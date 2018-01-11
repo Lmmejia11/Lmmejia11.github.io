@@ -99,14 +99,14 @@
         },
         methods: {
             switchRinger: function (selected) {
-                publishSwitch(selected, app.modality);
+                publishSwitch(selected, appbis.modality);
                 axios.post(apiRooms + "/" + selected + "/switch-ringer").then(x => {
                     axios.get(apiRooms + "/Ringers/on").then(response => {this.roomsRingerOn = response.data});
                 axios.get(apiRooms + "/Ringers/off").then(response => {this.roomsRingerOff = response.data})
                 });
             },
             switchAllRingers: function (mode) {
-                publishSwitchAll(app.roomsRingerOn, app.roomsRingerOff, mode);
+                publishSwitchAll(appbis.roomsRingerOn, appbis.roomsRingerOff, mode);
                 axios.post(apiRooms + "/switch-all-ringers/" + mode).then(x => {
                     axios.get(apiRooms + "/Ringers/on").then(response => {this.roomsRingerOn = response.data});
                 axios.get(apiRooms + "/Ringers/off").then(response => {this.roomsRingerOff = response.data})

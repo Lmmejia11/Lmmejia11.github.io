@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b51fe583-4b2d-4085-9386-550d4e122545" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Switch_Light.html" afterPath="$PROJECT_DIR$/Switch_Light.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Switch_Ringer.html" afterPath="$PROJECT_DIR$/Switch_Ringer.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/building.html" afterPath="$PROJECT_DIR$/building.html" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -18,7 +16,7 @@
       <file leaf-file-name="Switch_Light.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Switch_Light.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="445">
+            <state relative-caret-position="502">
               <caret line="102" column="16" lean-forward="true" selection-start-line="102" selection-start-column="16" selection-end-line="102" selection-end-column="54" />
               <folding />
             </state>
@@ -28,8 +26,8 @@
       <file leaf-file-name="Switch_Ringer.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Switch_Ringer.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
-              <caret line="76" column="0" lean-forward="true" selection-start-line="76" selection-start-column="0" selection-end-line="76" selection-end-column="0" />
+            <state relative-caret-position="504">
+              <caret line="116" column="7" lean-forward="true" selection-start-line="116" selection-start-column="7" selection-end-line="116" selection-end-column="7" />
               <folding />
             </state>
           </provider>
@@ -234,12 +232,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1515590078648</updated>
-      <workItem from="1515590080336" duration="12007000" />
+      <workItem from="1515590080336" duration="12288000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="12007000" />
+    <option name="totallyTimeSpent" value="12288000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
@@ -328,7 +326,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Switch_Light.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="445">
+        <state relative-caret-position="502">
           <caret line="102" column="16" lean-forward="true" selection-start-line="102" selection-start-column="16" selection-end-line="102" selection-end-column="54" />
           <folding />
         </state>
@@ -336,8 +334,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Switch_Ringer.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
-          <caret line="76" column="0" lean-forward="true" selection-start-line="76" selection-start-column="0" selection-end-line="76" selection-end-column="0" />
+        <state relative-caret-position="504">
+          <caret line="116" column="7" lean-forward="true" selection-start-line="116" selection-start-column="7" selection-end-line="116" selection-end-column="7" />
           <folding />
         </state>
       </provider>
