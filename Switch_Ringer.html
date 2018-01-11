@@ -67,13 +67,19 @@
         console.log("Published: light in room id " + roomId + " needs to be switched" );
     };
 
-    function publishSwtichAll() {};
+    function publishSwitchAll(listringerson, listringersoff, mode) {
+        if (mode == "OFF") return listringerson.filter( function(currentroom){
+            clientS.publish("rl/state/noise/"+currentroom.id, mode)})
+        if (mode == "ON") return listringersoff.filter( function(currentroom){
+            clientS.publish("rl/state/noise/"+currentroom.id, mode)})
+    };
+
 
 
 
     //------ Vue.js code to manage switches---------------------------
-    //var apiRooms = 'https://glacial-plateau-99461.herokuapp.com/api/rooms';
-    var apiRooms = 'http://localhost:8080/api/rooms';
+    var apiRooms = 'https://glacial-plateau-99461.herokuapp.com/api/rooms';
+    //var apiRooms = 'http://localhost:8080/api/rooms';
 
     var appbis = new Vue({
         el: '#appbis',
@@ -93,12 +99,14 @@
         },
         methods: {
             switchRinger: function (selected) {
+                publishSwitch(selected, app.modality);
                 axios.post(apiRooms + "/" + selected + "/switch-ringer").then(x => {
                     axios.get(apiRooms + "/Ringers/on").then(response => {this.roomsRingerOn = response.data});
                 axios.get(apiRooms + "/Ringers/off").then(response => {this.roomsRingerOff = response.data})
                 });
             },
             switchAllRingers: function (mode) {
+                publishSwitchAll(app.roomsRingerOn, app.roomsRingerOff, mode);
                 axios.post(apiRooms + "/switch-all-ringers/" + mode).then(x => {
                     axios.get(apiRooms + "/Ringers/on").then(response => {this.roomsRingerOn = response.data});
                 axios.get(apiRooms + "/Ringers/off").then(response => {this.roomsRingerOff = response.data})
